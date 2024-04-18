@@ -1,0 +1,7 @@
+-FE../bin
+-Fu../src/core
+-Fu../src/d7zip
+-FU$fpctarget
+-Sm
+-Mdelphi
+-Sh 
