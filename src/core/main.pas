@@ -9,6 +9,7 @@ type
     compressionlevel:Integer ;
     compressionmethod:TZipCompressionMethod ;
     zipfile:string ;
+    function SetMethodByStr(str:string):Boolean ;
     function ParseCommand(const s:string; var cmd:string;
       var args:TArray<string>):Boolean ;
     procedure ExitWithError(const msg:string; code:Integer = 1) ;
@@ -67,11 +68,16 @@ begin
       if s.Trim().StartsWith('#') then Continue ;
       if not ParseCommand(s,cmd,args) then
         ExitWithError('Error parsing line: '+s) ;
-      if cmd='ZipFile' then begin
+      cmd:=cmd.ToLower() ;
+      if cmd='setcompressor' then begin
+        if not SetMethodByStr(args[0]) then
+          ExitWithError('Неизвестный метод сжатия: '+args[0]) ;
+      end;
+      if cmd='zipfile' then begin
         zipfile:=args[0] ;
         Writeln('Setting zipfile: '+zipfile) ;
       end;
-      if cmd='File' then begin
+      if cmd='file' then begin
         if not FileExists(args[0]) then ExitWithError('Not found file: '+args[0]) ;
         if Length(args)>1 then begin
           arc.AddFile(args[0], args[1]) ;
@@ -101,5 +107,17 @@ begin
       Writeln('Ошибка '+E.ClassName+': '+E.Message);
   end;
 end ;
+
+function TMain.SetMethodByStr(str: string):Boolean;
+begin
+  Result:=True ;
+  str:=str.ToLower() ;
+  if str='deflate' then compressionmethod:=TZipCompressionMethod.mzDeflate else
+  if str='deflate64' then compressionmethod:=TZipCompressionMethod.mzDeflate64 else
+  if str='bzip2' then compressionmethod:=TZipCompressionMethod.mzBZip2 else
+  if str='lzma' then compressionmethod:=TZipCompressionMethod.mzLZMA else
+  if str='ppmd' then compressionmethod:=TZipCompressionMethod.mzPPMD else
+  Result:=False ;
+end;
 
 end.
