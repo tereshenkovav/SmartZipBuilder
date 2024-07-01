@@ -34,7 +34,7 @@ begin
   // В текущей реализации не поддерживается парсинг с кавычками - пробелы в именах нельзя
   // Нужно либо сделать чистовой паросер, либо убирать кавычки при возрате строки Split
   arr:=s.Split([' '],'"') ;
-  if Length(arr)<2 then Exit(False) ;
+  if Length(arr)<2 then ExitWithError('Not found arguments: '+s) ;
   cmd:=arr[0] ;
   SetLength(args,Length(arr)-1) ;
   for i := 0 to Length(arr)-2 do
@@ -45,7 +45,7 @@ end;
 procedure TMain.Run() ;
 var arc: I7zOutArchive;
     script:TStringList ;
-    s,cmd:string ;
+    s,cmd,resfile:string ;
     args:TArray<string> ;
 begin
   try
@@ -71,7 +71,7 @@ begin
       cmd:=cmd.ToLower() ;
       if cmd='setcompressor' then begin
         if not SetMethodByStr(args[0]) then
-          ExitWithError('Неизвестный метод сжатия: '+args[0]) ;
+          ExitWithError('Unknown compression method: '+args[0]) ;
       end;
       if cmd='zipfile' then begin
         zipfile:=args[0] ;
@@ -79,15 +79,9 @@ begin
       end;
       if cmd='file' then begin
         if not FileExists(args[0]) then ExitWithError('Not found file: '+args[0]) ;
-        if Length(args)>1 then begin
-          arc.AddFile(args[0], args[1]) ;
-          Writeln('Adding file: '+args[0]+' as '+args[1]) ;
-        end
-        else begin
-        // Добавить вырезание пути к файлу из имени файла для добавления
-          arc.AddFile(args[0], args[0]) ;
-          Writeln('Adding file: '+args[0]) ;
-        end;
+        if Length(args)>1 then resfile:=args[1] else resfile:=ExtractFileName(args[0]) ;
+        arc.AddFile(args[0], resfile) ;
+        Writeln('Adding file: '+args[0]+' as '+resfile) ;
       end;
     end;
 
