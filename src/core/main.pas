@@ -45,6 +45,7 @@ end;
 procedure TMain.Run() ;
 var arc: I7zOutArchive;
     script:TStringList ;
+    stms:TStringStream ;
     s,cmd,resfile:string ;
     args:TArray<string> ;
 begin
@@ -83,6 +84,12 @@ begin
         arc.AddFile(args[0], resfile) ;
         Writeln('Adding file: '+args[0]+' as '+resfile) ;
       end;
+      if cmd='text' then begin
+        if Length(args)<2 then ExitWithError('Command "Text" required two arguments: text and filename in archive') ;
+        stms:=TStringStream.Create(args[0]) ;
+        arc.AddStream(stms, soOwned, faArchive, CurrentFileTime, CurrentFileTime, args[1], false, false);
+        Writeln('Adding string: '+args[0]+' as '+args[1]) ;
+      end;
     end;
 
     script.Free ;
@@ -98,7 +105,7 @@ begin
     Writeln('Archive build OK') ;
   except
     on E: Exception do
-      Writeln('Ошибка '+E.ClassName+': '+E.Message);
+      Writeln('Error '+E.ClassName+': '+E.Message);
   end;
 end ;
 
