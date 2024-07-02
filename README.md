@@ -79,7 +79,7 @@
 ```
 # Это комментарий
 SetCompressor Deflate
-CompressionLevel 9
+SetCompressionLevel 9
 ZipFile %TEMP%\myarc.zip
 SetOutPath bin
 File "builds\my best prog.exe" prog1.exe

@@ -85,7 +85,6 @@ var arc: I7zOutArchive;
     i,p:Integer ;
 begin
   try
-    Writeln('This source is prototype for development purposes only!!!') ;
     if ParamCount<1 then ExitWithError('Usage: scriptfile [arguments]') ;
 
     params:=TDictionary<string,string>.Create ;
