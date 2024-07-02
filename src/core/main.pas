@@ -1,7 +1,8 @@
 ﻿unit main ;
 
 interface
-uses sevenzip, SysUtils ;
+uses SysUtils, Generics.Collections, Classes,
+  sevenzip ;
 
 type
   TMain = class
@@ -10,22 +11,28 @@ type
     compressionmethod:TZipCompressionMethod ;
     zipfile:string ;
     outpath:string ;
+    texts:TDictionary<string,string> ;
     function SetMethodByStr(str:string):Boolean ;
     function SetLevelByStr(str:string):Boolean;
     function ParseCommand(const s:string; var cmd:string;
       var args:TArray<string>):Boolean ;
     procedure ExitWithError(const msg:string; code:Integer = 1) ;
+    function formatStringSyms(const s:string):string ;
   public
     procedure Run() ;
   end;
 
 implementation
-uses Classes ;
 
 procedure TMain.ExitWithError(const msg: string; code: Integer);
 begin
   Writeln(msg) ;
   Halt(code) ;
+end;
+
+function TMain.formatStringSyms(const s: string): string;
+begin
+  Result:=s.Replace('\n',#10).Replace('\r',#13) ;
 end;
 
 function TMain.ParseCommand(const s: string; var cmd: string;
@@ -48,12 +55,14 @@ procedure TMain.Run() ;
 var arc: I7zOutArchive;
     script:TStringList ;
     stms:TStringStream ;
-    s,cmd,resfile,resdir,srcdir:string ;
+    s,cmd,resfile,resdir,srcdir,textfile:string ;
     args:TArray<string> ;
 begin
   try
     Writeln('This source is prototype for development purposes only!!!') ;
     if ParamCount<1 then ExitWithError('Usage: scriptfile') ;
+
+    texts:=TDictionary<string,string>.Create() ;
 
     compressionlevel:=5 ;
     compressionmethod:=TZipCompressionMethod.mzDeflate ;
@@ -110,24 +119,36 @@ begin
       end;
       if cmd='text' then begin
         if Length(args)<2 then ExitWithError('Command "Text" required two arguments: text and filename in archive') ;
-        stms:=TStringStream.Create(args[0]) ;
-        arc.AddStream(stms, soOwned, faArchive, CurrentFileTime, CurrentFileTime,
-          outpath+args[1], false, false);
-        Writeln('Adding string: '+args[0]+' as '+args[1]) ;
+        textfile:=outpath+args[1] ;
+        if texts.ContainsKey(textfile) then begin
+          texts[textfile]:=texts[textfile]+args[0] ;
+          Writeln('Append string: '+args[0]+' to '+args[1]) ;
+        end
+        else begin
+          texts.Add(textfile,args[0]) ;
+          Writeln('Adding string: '+args[0]+' as '+args[1]) ;
+        end;
       end;
     end;
-
-    script.Free ;
 
     if zipfile='' then ExitWithError('Not set ZipFile') ;
 
     SetCompressionLevel(arc, compressionlevel);
     if compressionlevel>0 then SetCompressionMethod(arc, compressionmethod) ;
 
+    for textfile in texts.Keys do begin
+      stms:=TStringStream.Create(formatStringSyms(texts[textfile])) ;
+      arc.AddStream(stms, soOwned, faArchive, CurrentFileTime, CurrentFileTime,
+        textfile, false, false);
+    end;
+
     if FileExists(zipfile) then DeleteFile(zipfile) ;
-    
+
     arc.SaveToFile(zipfile);
     Writeln('Archive build OK') ;
+
+    texts.Free ;
+    script.Free ;
   except
     on E: Exception do
       Writeln('Error '+E.ClassName+': '+E.Message);
