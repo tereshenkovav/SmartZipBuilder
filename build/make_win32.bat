@@ -1,2 +1,2 @@
 mkdir i386-win32
-fpc @fpc-config ..\src\SmartZipBuilder.pp
+ppc386 @fpc-config ..\src\SmartZipBuilder.pp

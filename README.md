@@ -99,7 +99,7 @@ Text $LANG$ defautlang
 [Delphi](https://delphi.embarcadero.com/)
 (проверено с версиями 10 и 11),
 либо [FreePascalCompiler](https://www.freepascal.org)
-(проверено с версией 3.0.4)
+(проверено с версией 3.2.2)
 
 При использовании Delphi нужно открыть проект
 `src\SmartZipBuilder.dproj` и выполнить его сборку в конфигурации Release.

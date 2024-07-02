@@ -41,11 +41,14 @@ end;
 
 function TMain.expandEnvVars(const str: string): string;
 var BufSize: Integer;
+    buf:PChar ;
 begin
   BufSize := ExpandEnvironmentStrings(PChar(str), nil, 0);
   if BufSize>0 then begin
-    SetLength(Result, BufSize - 1);
-    ExpandEnvironmentStrings(PChar(str),PChar(Result), BufSize);
+    buf:=StrAlloc(BufSize+1) ;
+    ExpandEnvironmentStrings(PChar(str),buf,BufSize);
+    Result:=buf ;
+    StrDispose(buf) ;
   end
   else
     Result := '';
