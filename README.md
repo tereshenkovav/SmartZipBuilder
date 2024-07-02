@@ -87,7 +87,7 @@ File "builds\my best prog.exe" prog1.exe
 Files builds\*.dll
 SetOutPath data
 Dir data\images
-Text $LANG$ defautlang
+Text Language:\r\n$LANG$ defautlang
 ```
 
 и его выполнение
@@ -110,4 +110,5 @@ Text $LANG$ defautlang
 `build` и запустить файл `make_win32.bat`
 В каталоге bin появится исполняемый файл `SmartZipBuilder.exe`
 
-Файл 7z.dll необходим для работы исполняемого файла. 
+В обоих случаях необходимо использовать 32-битную сборку, потому что
+файл 7z.dll, необходимый для работы исполняемого файла, имеет такую разрядность.
