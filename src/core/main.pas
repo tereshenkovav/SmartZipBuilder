@@ -6,10 +6,11 @@ uses sevenzip, SysUtils ;
 type
   TMain = class
   private
-    compressionlevel:Integer ;
+    compressionlevel:Cardinal ;
     compressionmethod:TZipCompressionMethod ;
     zipfile:string ;
     function SetMethodByStr(str:string):Boolean ;
+    function SetLevelByStr(str:string):Boolean;
     function ParseCommand(const s:string; var cmd:string;
       var args:TArray<string>):Boolean ;
     procedure ExitWithError(const msg:string; code:Integer = 1) ;
@@ -74,6 +75,10 @@ begin
         if not SetMethodByStr(args[0]) then
           ExitWithError('Unknown compression method: '+args[0]) ;
       end;
+      if cmd='setcompressionlevel' then begin
+        if not SetLevelByStr(args[0]) then
+          ExitWithError('Unknown compression level: '+args[0]) ;
+      end;
       if cmd='zipfile' then begin
         zipfile:=args[0] ;
         Writeln('Setting zipfile: '+zipfile) ;
@@ -96,8 +101,8 @@ begin
 
     if zipfile='' then ExitWithError('Not set ZipFile') ;
 
-    SetCompressionLevel(arc, 5);
-    SetCompressionMethod(arc, compressionmethod) ;
+    SetCompressionLevel(arc, compressionlevel);
+    if compressionlevel>0 then SetCompressionMethod(arc, compressionmethod) ;
 
     if FileExists(zipfile) then DeleteFile(zipfile) ;
     
@@ -119,6 +124,16 @@ begin
   if str='lzma' then compressionmethod:=TZipCompressionMethod.mzLZMA else
   if str='ppmd' then compressionmethod:=TZipCompressionMethod.mzPPMD else
   Result:=False ;
+end;
+
+function TMain.SetLevelByStr(str: string):Boolean;
+var n,code:Integer ;
+begin
+  Result:=True ;
+  Val(str.Trim(),n,code) ;
+  if code<>0 then Exit(False) ;
+  if (n<0) or (n>9) then Exit(False) ;
+  compressionlevel:=n ;
 end;
 
 end.
