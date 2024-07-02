@@ -115,7 +115,7 @@ begin
     compressionlevel:=5 ;
     compressionmethod:=TZipCompressionMethod.mzDeflate ;
     zipfile:='' ;
-    outpath:='.\' ;
+    outpath:='' ;
 
     arc := CreateOutArchive(CLSID_CFormatZip);
 
@@ -144,7 +144,12 @@ begin
       end;
       if cmd='setoutpath' then begin
         outpath:=args[0].Trim() ;
-        if outpath[length(outpath)]<>'\' then outpath:=outpath+'\' ;
+        if outpath='.' then begin
+          outpath:=''
+        end
+        else begin
+          if outpath[length(outpath)]<>'\' then outpath:=outpath+'\' ;
+        end;
         Writeln('Setting outpath: '+outpath) ;
       end;
       if cmd='files' then begin
