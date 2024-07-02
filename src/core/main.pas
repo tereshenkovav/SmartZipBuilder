@@ -13,6 +13,7 @@ type
     outpath:string ;
     texts:TDictionary<string,string> ;
     params:TDictionary<string,string> ;
+    maxv:int64 ;
     function SetMethodByStr(str:string):Boolean ;
     function SetLevelByStr(str:string):Boolean;
     function ParseCommand(const s:string; var cmd:string;
@@ -21,12 +22,22 @@ type
     function formatStringSyms(const s:string):string ;
     function expandEnvVars(const str: string): string;
     function expandParams(const str: string): string;
+    procedure SetMaxV(value:int64) ;
+    procedure SendProgress(value:int64) ;
   public
     procedure Run() ;
   end;
 
 implementation
 uses Windows ;
+
+var MaxValue:Integer ;
+
+function ProgressCallback(sender: Pointer; total: boolean; value: int64): HRESULT; stdcall;
+ begin
+   if total then TMain(sender).SetMaxV(value) else TMain(sender).SendProgress(value) ;
+   Result := S_OK;
+ end;
 
 procedure TMain.ExitWithError(const msg: string; code: Integer);
 begin
@@ -181,7 +192,10 @@ begin
 
     if FileExists(zipfile) then SysUtils.DeleteFile(zipfile) ;
 
+    arc.SetProgressCallback(Self, ProgressCallback);
+    Writeln('Building archive...') ;
     arc.SaveToFile(zipfile);
+    Writeln('') ;
     Writeln('Archive build OK') ;
 
     texts.Free ;
@@ -191,6 +205,16 @@ begin
       Writeln('Error '+E.ClassName+': '+E.Message);
   end;
 end ;
+
+procedure TMain.SetMaxV(value: int64);
+begin
+  maxv:=value ;
+end;
+
+procedure TMain.SendProgress(value: int64);
+begin
+  if maxv>0 then Write(Round(100*value/maxv),'%',#13) ;
+end;
 
 function TMain.SetMethodByStr(str: string):Boolean;
 begin
