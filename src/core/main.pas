@@ -9,6 +9,7 @@ type
     compressionlevel:Cardinal ;
     compressionmethod:TZipCompressionMethod ;
     zipfile:string ;
+    outpath:string ;
     function SetMethodByStr(str:string):Boolean ;
     function SetLevelByStr(str:string):Boolean;
     function ParseCommand(const s:string; var cmd:string;
@@ -57,6 +58,7 @@ begin
     compressionlevel:=5 ;
     compressionmethod:=TZipCompressionMethod.mzDeflate ;
     zipfile:='' ;
+    outpath:='.\' ;
 
     arc := CreateOutArchive(CLSID_CFormatZip);
 
@@ -83,16 +85,22 @@ begin
         zipfile:=args[0] ;
         Writeln('Setting zipfile: '+zipfile) ;
       end;
+      if cmd='setoutpath' then begin
+        outpath:=args[0].Trim() ;
+        if outpath[length(outpath)]<>'\' then outpath:=outpath+'\' ;
+        Writeln('Setting outpath: '+outpath) ;
+      end;
       if cmd='file' then begin
         if not FileExists(args[0]) then ExitWithError('Not found file: '+args[0]) ;
         if Length(args)>1 then resfile:=args[1] else resfile:=ExtractFileName(args[0]) ;
-        arc.AddFile(args[0], resfile) ;
+        arc.AddFile(args[0], outpath+resfile) ;
         Writeln('Adding file: '+args[0]+' as '+resfile) ;
       end;
       if cmd='text' then begin
         if Length(args)<2 then ExitWithError('Command "Text" required two arguments: text and filename in archive') ;
         stms:=TStringStream.Create(args[0]) ;
-        arc.AddStream(stms, soOwned, faArchive, CurrentFileTime, CurrentFileTime, args[1], false, false);
+        arc.AddStream(stms, soOwned, faArchive, CurrentFileTime, CurrentFileTime,
+          outpath+args[1], false, false);
         Writeln('Adding string: '+args[0]+' as '+args[1]) ;
       end;
     end;
