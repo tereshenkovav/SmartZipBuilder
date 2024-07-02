@@ -18,11 +18,13 @@ type
       var args:TArray<string>):Boolean ;
     procedure ExitWithError(const msg:string; code:Integer = 1) ;
     function formatStringSyms(const s:string):string ;
+    function expandEnvVars(const str: string): string;
   public
     procedure Run() ;
   end;
 
 implementation
+uses Windows ;
 
 procedure TMain.ExitWithError(const msg: string; code: Integer);
 begin
@@ -33,6 +35,18 @@ end;
 function TMain.formatStringSyms(const s: string): string;
 begin
   Result:=s.Replace('\n',#10).Replace('\r',#13) ;
+end;
+
+function TMain.expandEnvVars(const str: string): string;
+var BufSize: Integer;
+begin
+  BufSize := ExpandEnvironmentStrings(PChar(str), nil, 0);
+  if BufSize>0 then begin
+    SetLength(Result, BufSize - 1);
+    ExpandEnvironmentStrings(PChar(str),PChar(Result), BufSize);
+  end
+  else
+    Result := '';
 end;
 
 function TMain.ParseCommand(const s: string; var cmd: string;
@@ -79,7 +93,7 @@ begin
     for s in script do begin
       if s.Trim().Length=0 then Continue ;
       if s.Trim().StartsWith('#') then Continue ;
-      if not ParseCommand(s,cmd,args) then
+      if not ParseCommand(expandEnvVars(s),cmd,args) then
         ExitWithError('Error parsing line: '+s) ;
       cmd:=cmd.ToLower() ;
       if cmd='setcompressor' then begin
@@ -142,7 +156,7 @@ begin
         textfile, false, false);
     end;
 
-    if FileExists(zipfile) then DeleteFile(zipfile) ;
+    if FileExists(zipfile) then SysUtils.DeleteFile(zipfile) ;
 
     arc.SaveToFile(zipfile);
     Writeln('Archive build OK') ;
