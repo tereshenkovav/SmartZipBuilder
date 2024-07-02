@@ -12,6 +12,7 @@ type
     zipfile:string ;
     outpath:string ;
     texts:TDictionary<string,string> ;
+    params:TDictionary<string,string> ;
     function SetMethodByStr(str:string):Boolean ;
     function SetLevelByStr(str:string):Boolean;
     function ParseCommand(const s:string; var cmd:string;
@@ -19,6 +20,7 @@ type
     procedure ExitWithError(const msg:string; code:Integer = 1) ;
     function formatStringSyms(const s:string):string ;
     function expandEnvVars(const str: string): string;
+    function expandParams(const str: string): string;
   public
     procedure Run() ;
   end;
@@ -49,6 +51,14 @@ begin
     Result := '';
 end;
 
+function TMain.expandParams(const str: string): string;
+var name:string ;
+begin
+  Result:=str ;
+  for name in params.Keys do
+    Result:=Result.Replace('$'+name+'$',params[name]) ;
+end;
+
 function TMain.ParseCommand(const s: string; var cmd: string;
   var args: TArray<string>): Boolean;
 var arr:TArray<string> ;
@@ -71,10 +81,20 @@ var arc: I7zOutArchive;
     stms:TStringStream ;
     s,cmd,resfile,resdir,srcdir,textfile:string ;
     args:TArray<string> ;
+    i,p:Integer ;
 begin
   try
     Writeln('This source is prototype for development purposes only!!!') ;
-    if ParamCount<1 then ExitWithError('Usage: scriptfile') ;
+    if ParamCount<1 then ExitWithError('Usage: scriptfile [arguments]') ;
+
+    params:=TDictionary<string,string>.Create ;
+
+    for i := 2 to ParamCount do begin
+      if ParamStr(i)[1]<>'/' then ExitWithError('Unknown argument: '+ParamStr(i)+', use /name=value') ;
+      p:=ParamStr(i).IndexOf('=') ;
+      if p=-1 then ExitWithError('Unknown argument: '+ParamStr(i)+', use /name=value') ;
+      params.Add(ParamStr(i).Substring(1,p-1),ParamStr(i).Substring(p+1)) ;
+    end;
 
     texts:=TDictionary<string,string>.Create() ;
 
@@ -93,7 +113,7 @@ begin
     for s in script do begin
       if s.Trim().Length=0 then Continue ;
       if s.Trim().StartsWith('#') then Continue ;
-      if not ParseCommand(expandEnvVars(s),cmd,args) then
+      if not ParseCommand(expandParams(expandEnvVars(s)),cmd,args) then
         ExitWithError('Error parsing line: '+s) ;
       cmd:=cmd.ToLower() ;
       if cmd='setcompressor' then begin
