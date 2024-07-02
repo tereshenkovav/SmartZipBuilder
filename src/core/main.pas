@@ -64,14 +64,15 @@ function TMain.ParseCommand(const s: string; var cmd: string;
 var arr:TArray<string> ;
     i:Integer ;
 begin
-  // В текущей реализации не поддерживается парсинг с кавычками - пробелы в именах нельзя
-  // Нужно либо сделать чистовой паросер, либо убирать кавычки при возрате строки Split
   arr:=s.Split([' '],'"') ;
   if Length(arr)<2 then ExitWithError('Not found arguments: '+s) ;
   cmd:=arr[0] ;
   SetLength(args,Length(arr)-1) ;
-  for i := 0 to Length(arr)-2 do
-   args[i]:=arr[i+1] ;
+  for i := 0 to Length(arr)-2 do begin
+    args[i]:=arr[i+1] ;
+    if (args[i][1]='"')and(args[i][Length(args[i])]='"') then
+      args[i]:=args[i].Substring(1,Length(args[i])-2) ;
+  end;
   Result:=True ;
 end;
 

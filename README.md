@@ -17,6 +17,7 @@
 * Добавление строки в указанный файл в архиве
 * Поддержка переменных среды как строк в скрипте
 * Поддержка аргументов архиватора как строк в скрипте
+* Поддержка имен файлов и каталогов с пробелами, при использовании двойных кавычек
 
 ## Команды
 
@@ -81,11 +82,11 @@ SetCompressor Deflate
 CompressionLevel 9
 ZipFile %TEMP%\myarc.zip
 SetOutPath bin
-File builds\myprog.exe prog1.exe
+File "builds\my best prog.exe" prog1.exe
 Files builds\*.dll
 SetOutPath data
 Dir data\images
-Text "$LANG$" defautlang
+Text $LANG$ defautlang
 ```
 
 и его выполнение
