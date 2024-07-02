@@ -112,7 +112,7 @@ begin
       ExitWithError('Not found script file: '+ParamStr(1)) ;
 
     script:=TStringList.Create() ;
-    script.LoadFromFile(ParamStr(1)) ;
+    script.LoadFromFile(ParamStr(1),TEncoding.UTF8) ;
     for s in script do begin
       if s.Trim().Length=0 then Continue ;
       if s.Trim().StartsWith('#') then Continue ;
