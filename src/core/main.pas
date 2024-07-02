@@ -48,7 +48,7 @@ procedure TMain.Run() ;
 var arc: I7zOutArchive;
     script:TStringList ;
     stms:TStringStream ;
-    s,cmd,resfile:string ;
+    s,cmd,resfile,srcdir:string ;
     args:TArray<string> ;
 begin
   try
@@ -89,6 +89,12 @@ begin
         outpath:=args[0].Trim() ;
         if outpath[length(outpath)]<>'\' then outpath:=outpath+'\' ;
         Writeln('Setting outpath: '+outpath) ;
+      end;
+      if cmd='files' then begin
+        srcdir:=ExtractFilePath(args[0]) ;
+        if srcdir='' then srcdir:='.' ;
+        arc.AddFiles(srcdir, outpath, ExtractFileName(args[0]), false);
+        Writeln('Adding files: '+args[0]) ;
       end;
       if cmd='file' then begin
         if not FileExists(args[0]) then ExitWithError('Not found file: '+args[0]) ;
