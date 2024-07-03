@@ -817,8 +817,8 @@ type
 
   // constructors
 
-  function CreateInArchive(const classid: TGUID; const lib: string = '7z.dll'): I7zInArchive;
-  function CreateOutArchive(const classid: TGUID; const lib: string = '7z.dll'): I7zOutArchive;
+  function CreateInArchive(const classid: TGUID; const lib: string = '7z-4-65.dll'): I7zInArchive;
+  function CreateOutArchive(const classid: TGUID; const lib: string = '7z-4-65.dll'): I7zOutArchive;
 
 const
   CLSID_CFormatZip      : TGUID = '{23170F69-40C1-278A-1000-000110010000}'; // [OUT] zip jar xpi
